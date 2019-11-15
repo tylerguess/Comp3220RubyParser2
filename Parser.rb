@@ -79,8 +79,8 @@ class Parser < Scanner
 
     def term()
         trm = AST.new(Token.new("term", "term"))
-        factor()
-        ttail()
+        trm.addChild(factor())
+        trm.addChild(ttail())
         return trm
     end
 
@@ -88,7 +88,7 @@ class Parser < Scanner
         fct = AST.new(Token.new("factor", "factor"))
         if (@lookahead.type == Token::LPAREN)
             match(Token::LPAREN)
-            exp()
+            fct.addChild(exp())
             if (@lookahead.type == Token::RPAREN)
                 match(Token::RPAREN)
             else
@@ -96,8 +96,10 @@ class Parser < Scanner
             end
         elsif (@lookahead.type == Token::INT)
             match(Token::INT)
+            fct = AST.new(@lookahead)
         elsif (@lookahead.type == Token::ID)
             match(Token::ID)
+            fct = AST.new(@lookahead)
         else
             puts "Expected ( or INT or ID found #{@lookahead.text}"
             @errors_found+=1
@@ -121,11 +123,14 @@ class Parser < Scanner
     end
 
     def etail()
+        etl = AST.new(Token.new("etail", "etail"))
         if (@lookahead.type == Token::ADDOP)
+            etl = AST.new(@lookahead)
             match(Token::ADDOP)
             term()
             etail()
         elsif (@lookahead.type == Token::SUBOP)
+            etl = AST.new(@lookahead)
             match(Token::SUBOP)
             term()
             etail()
